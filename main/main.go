@@ -10,6 +10,11 @@ func main() {
 		log.Fatal("the database failed to connect")
 	}
 
+	_, err1 := pgconx.New("0401 05 06034")
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+
 	phoneNumbers, err := pgconx.All("phone_numbers")
 	if err != nil {
 		log.Fatal(err)

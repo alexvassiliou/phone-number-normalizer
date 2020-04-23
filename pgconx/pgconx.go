@@ -47,6 +47,27 @@ func All(table string) ([]contact.Number, error) {
 	return ret, nil
 }
 
+// New insert a new number into the database
+func New(number string) (int, error) {
+	queryStr := fmt.Sprintf("INSERT INTO phone_numbers (number) VALUES ('%s')", number)
+
+	// insert the new number
+	rows, err := conn.Query(queryStr)
+	if err != nil {
+		return -1, err
+	}
+	rows.Close()
+
+	// retrieve the new id
+	ret, err2 := getID(number)
+	if err2 != nil {
+		return -1, nil
+	}
+	defer rows.Close()
+
+	return ret, nil
+}
+
 // Update a database entry
 func Update(value string, id int) error {
 	queryStr := fmt.Sprintf("UPDATE phone_numbers SET number='%s' WHERE id=%d;", value, id)
@@ -56,6 +77,26 @@ func Update(value string, id int) error {
 	}
 	defer rows.Close()
 	return nil
+}
+
+func getID(number string) (int, error) {
+	var ret int
+
+	getID := fmt.Sprintf("SELECT id FROM phone_numbers WHERE number='%s'", number)
+
+	rows, err := conn.Query(getID)
+	if err != nil {
+		return -1, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&ret, nil)
+		if err != nil {
+			return -1, nil
+		}
+	}
+	return ret, nil
 }
 
 func pgConfig() pgx.ConnConfig {
