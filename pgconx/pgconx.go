@@ -1,8 +1,10 @@
 package pgconx
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"phone-number-normalizer/contact"
 
 	"github.com/jackc/pgx"
 	"github.com/joho/godotenv"
@@ -22,26 +24,38 @@ func Init() error {
 }
 
 // All lists all the phone numbers
-func All(table string) ([]string, error) {
-	var ret []string
+func All(table string) ([]contact.Number, error) {
+	var ret []contact.Number
 
 	query := "SELECT * FROM " + table
 
 	rows, err := conn.Query(query)
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
-		var n string
-		err := rows.Scan(nil, &n)
+		var n contact.Number
+		err := rows.Scan(&n.ID, &n.PhoneNumber)
 		if err != nil {
 			return nil, err
 		}
 		ret = append(ret, n)
 	}
+
 	return ret, nil
+}
+
+// Update a database entry
+func Update(value string, id int) error {
+	queryStr := fmt.Sprintf("UPDATE phone_numbers SET number='%s' WHERE id=%d;", value, id)
+	rows, err := conn.Query(queryStr)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
 }
 
 func pgConfig() pgx.ConnConfig {

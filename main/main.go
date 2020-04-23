@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"phone-number-normalizer/pgconx"
 )
 
 func main() {
-	fmt.Println("connecting to postgres...")
 	if pgconx.Init() != nil {
 		log.Fatal("the database failed to connect")
 	}
@@ -18,6 +16,10 @@ func main() {
 	}
 
 	for _, v := range phoneNumbers {
-		fmt.Println(v)
+		v.Normalize()
+		err := pgconx.Update(v.PhoneNumber, v.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
